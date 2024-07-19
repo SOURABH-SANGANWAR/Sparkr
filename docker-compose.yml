@@ -9,3 +9,10 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=user
       - MONGO_INITDB_ROOT_PASSWORD=password
+# New Redis service
+  redis:
+    image: redis:latest 
+    ports:
+      - 6379:6379 
+    volumes:
+      - ./redis-data:/data  

@@ -9,5 +9,12 @@ Steps:
 
 2. Activate environment
 ''' source myenv/bin/activate '''
-    
-Yet to complete...
+
+3. Install requirements
+'''pip install -r requirements.txt'''    
+
+4. Run celery worker
+'''celery -A tasks worker --pool=solo -l info'''
+
+5. Run flask app
+'''python run.py''' 
