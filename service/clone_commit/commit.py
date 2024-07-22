@@ -1,10 +1,7 @@
-import os
 import git
-from tempfile import mkdtemp
-from app import flask_app
 
 
-def clone_repo( repo, commit_message, dir ):
+def commit_repo( repo, commit_message ):
     try:
         repo.git.add(all=True)
         repo.index.commit(commit_message)

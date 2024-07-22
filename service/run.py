@@ -1,7 +1,7 @@
 from tasks import long_running_task, make_commit, init_repo
 from celery.result import AsyncResult
 from flask import request,jsonify 
-from app import flask_app 
+from flask_app import flask_app 
 
 app = flask_app
 
@@ -23,7 +23,7 @@ def task_status(task_id):
 @app.route('/commit', methods=['POST'])
 def commit():
     data = request.json
-    task = make_commit.apply_async(args=[data['repo_url'], data['commit_message'], data['apps'], data['models'], data['serializers'], data['routes']])
+    task = make_commit.apply_async(args=[data['repo_url'], data['commit_message'], data['apps'], data['models'], data['serializers'], data['routes'], data['project']])
     return jsonify({'task_id': task.id}), 202
 
 
@@ -38,7 +38,7 @@ def commit_status(task_id):
     return jsonify(response), 200
 
 @app.route('/init-repo', methods=['POST'])
-def init_repo():
+def init_repo_route():
     data = request.json
     task = init_repo.apply_async(args=[data['repo_url']])
     return jsonify({'task_id': task.id}), 202

@@ -34,5 +34,6 @@ type ProjectType = {
     repositoryName : string,
     _id ?: mongoose.Types.ObjectId,
     githubRepositoryUrl : string,
-    apps : AppType[]
+    apps : AppType[],
+    status : 'commiting' | 'commited',
 }

@@ -1,6 +1,6 @@
 import git
 from tempfile import mkdtemp
-from app import flask_app
+from flask_app import flask_app
 
 
 def clone_repo( repo_url: str) -> str:

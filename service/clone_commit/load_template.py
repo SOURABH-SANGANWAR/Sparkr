@@ -1,14 +1,12 @@
 import git
 from tempfile import mkdtemp
-# from app import flask_app
+from flask_app import flask_app
 import shutil
 
 
 def load_template( repo_url: str) -> str:
-    # pat_token = flask_app.config['PAT_TOKEN']
-    # import_url = flask_app.config['TEMPLATE_REPO_URL']
-    pat_token = "ghp_1q2w3e4r5t6y7u8i9o0p"
-    import_url = "https://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@github.com/SOURABH-SANGANWAR/Sparkr.git"
+    pat_token = flask_app.config['PAT_TOKEN']
+    import_url = flask_app.config['TEMPLATE_REPO_URL']
     temp_dir = mkdtemp()
     if temp_dir:
         try:

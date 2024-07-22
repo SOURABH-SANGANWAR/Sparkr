@@ -36,6 +36,15 @@ const ProjectSchema = new Schema({
         required: true,
         enum: ["sqlite", "postgres"]
     },
+    status : {
+        type: String,
+        required: true,
+        enum: ["commiting", "commited", "creating"],
+        default: "commiting"
+    },
+    taskId: {
+        type: String,
+    },
     createdAt: {
         type: Date,
         default: Date.now

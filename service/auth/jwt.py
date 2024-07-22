@@ -42,7 +42,7 @@ def update_settings(project, directory):
         jwt_config_string = jwt_config_string.replace('${BLACKLIST_AFTER_ROTATION}', str(config['blacklist']))
     
     # Read settings.py
-    with open(f'{directory}/mysite/settings.py', 'r') as f:
+    with open(f'{directory}/rest_framework_template/settings.py', 'r') as f:
         content = f.read()
     
     # Add rest_framework_simplejwt to INSTALLED_APPS
@@ -53,18 +53,12 @@ def update_settings(project, directory):
     
     content = pre + '\n' + ast.unparse(current) + '\n' + post
 
-    with open(f'{directory}/mysite/f1.py', 'w') as f:
-        f.write(content)
-
     # Add JWT config
     pre, current, post = find_variable_definition(content, 'SIMPLE_JWT')
     if not current:
         content = content + '\n' + jwt_config_string
     else:
         content = pre + '\n' + jwt_config_string + '\n' + post
-
-    with open(f'{directory}/mysite/f2.py', 'w') as f:
-        f.write(content)
 
     # Add JWTAuthentication to REST_FRAMEWORK Default Authentication Classes
     pre, current, post = find_variable_definition(content, 'REST_FRAMEWORK')
@@ -86,7 +80,7 @@ def update_settings(project, directory):
     content = pre + '\n' + ast.unparse(current) + '\n' + post
     formatted_content = FormatCode(content, style_config='pep8')[0]
 
-    with open(f'{directory}/mysite/settings.py', 'w') as f:
+    with open(f'{directory}/rest_framework_template/settings.py', 'w') as f:
         f.write(formatted_content)
 
                 

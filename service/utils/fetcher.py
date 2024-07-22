@@ -67,13 +67,13 @@ def find_variable_definition(code, var_name):
         return "", "", f"Error parsing code: {str(e)}"
     
 if __name__ == "__main__":
-    with open("F:\\projects\\backend-developer-tool\\backend\\test\\mysite\\settings.py", "r") as f:
+    with open("F:\\projects\\backend-developer-tool\\backend\\test\\rest_framework_template\\settings.py", "r") as f:
         code = f.read()
         pre, current, post = find_variable_definition(code, "timedelta")
-        with open("F:\\projects\\backend-developer-tool\\backend\\test\\mysite\\pre.py", "w") as f:
+        with open("F:\\projects\\backend-developer-tool\\backend\\test\\rest_framework_template\\pre.py", "w") as f:
             f.write(pre)
-        with open("F:\\projects\\backend-developer-tool\\backend\\test\\mysite\\current.py", "w") as f:
+        with open("F:\\projects\\backend-developer-tool\\backend\\test\\rest_framework_template\\current.py", "w") as f:
             if current:
                 f.write(ast.unparse(current))
-        with open("F:\\projects\\backend-developer-tool\\backend\\test\\mysite\\post.py", "w") as f:
+        with open("F:\\projects\\backend-developer-tool\\backend\\test\\rest_framework_template\\post.py", "w") as f:
             f.write(post)

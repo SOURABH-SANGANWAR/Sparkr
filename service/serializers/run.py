@@ -3,12 +3,11 @@ import ast
 from yapf.yapflib.yapf_api import FormatCode
 from utils.imports import check_imports
 
-def field_to_node(field, imports):
+def field_to_node(field):
     field_name = field['fieldName']
     field_type = field['type']
     field_node = None
     if field_type != 'default':
-        imports[field['options']['serializer_name']] = field['options']['serializer_import_path']
         field_node = ast.Assign(
             targets=[ast.Name(id=field_name, ctx=ast.Store())],
             value=ast.Call(
@@ -22,10 +21,10 @@ def field_to_node(field, imports):
             ),
             lineno=0
         )
-    return imports, field_node, ast.Constant(value=field_name, ctx = ast.Load())
+    return field_node, ast.Constant(value=field_name, ctx = ast.Load())
 
-def generate_serializer_node(serializer, imports):
-    imports[serializer['model_name']] = serializer['table_import_path']
+def generate_serializer_node(serializer):
+    print(serializer)
     serializer_node = ast.ClassDef(
         name=serializer['name'],
         bases=[ast.Name(id='serializers.ModelSerializer', ctx=ast.Load())],
@@ -38,7 +37,7 @@ def generate_serializer_node(serializer, imports):
     default_fields = []
 
     for field in serializer['fields']:
-        imports, field_node, field_name = field_to_node(field, imports)
+        field_node, field_name = field_to_node(field)
         if field_node:
             serializer_node.body.append(field_node)
         default_fields.append(field_name)
@@ -64,7 +63,7 @@ def generate_serializer_node(serializer, imports):
     )
     serializer_node.body.append(metaNode)
 
-    return serializer_node, imports
+    return serializer_node
 
 
 def add_serializer(serializers, app_name ,directory):
@@ -72,12 +71,11 @@ def add_serializer(serializers, app_name ,directory):
     with open(path, 'r') as file:
         content = file.read()
     
-    imports = {
-        'serializers': 'from rest_framework import serializers'
-    }
+    imports = {}
 
     for serializer in serializers:
-        serializer_node, imports = generate_serializer_node(serializer, imports)
+        imports.update(serializer['dependencies'])
+        serializer_node = generate_serializer_node(serializer)
         pre, current, post = find_variable_definition(content, serializer['name'])
         content = pre + '\n' + ast.unparse(serializer_node) + '\n' + post
     

@@ -31,7 +31,7 @@ def check_and_add_urls(app_name, app_path, paths):
 def add_urls(apps, directory):
     content = ''
     final_content = ''
-    page = f'{directory}/mysite/urls.py'
+    page = f'{directory}/rest_framework_template/urls.py'
     with open(page, 'r') as f:
         content = f.read()
         # Validate if path and include are imported

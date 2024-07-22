@@ -26,7 +26,9 @@ def get_cleaned_serializers(serializers, tables, apps):
     apps_dict = list_to_dict_mapping(apps)
 
     for serializer in serializers_not_deleted:
-        serializer['dependencies'] = {}
+        serializer['dependencies'] = {
+            "ModelSerializer": "from rest_framework import serializers"
+        }
         app_name = apps_dict.get(serializer['appId'])
         if app_name:
             serializer['import_path'] = f'from {app_name["name"]}.serializers import {serializer["name"]}'

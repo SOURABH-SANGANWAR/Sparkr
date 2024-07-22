@@ -1,5 +1,6 @@
 from celery import Celery, Task
 from flask import Flask
+from flask_cors import CORS
 
 def celery_init_app(app: Flask) -> Celery:
     class FlaskTask(Task):
@@ -16,6 +17,7 @@ def celery_init_app(app: Flask) -> Celery:
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    CORS(app)
     app.config.from_mapping(
         CELERY=dict(
             broker_url="redis://localhost:6379/0",

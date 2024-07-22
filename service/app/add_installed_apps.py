@@ -6,7 +6,7 @@ from yapf.yapflib.yapf_api import FormatCode
 def add_installed_apps(apps, directory):
     content = ''
     final_content = ''
-    with open(f'{directory}/mysite/settings.py', 'r') as f:
+    with open(f'{directory}/rest_framework_template/settings.py', 'r') as f:
         content = f.read()
         pre, current, post = find_variable_definition(content, 'INSTALLED_APPS')
         values_of_current = current.value.elts
@@ -18,7 +18,7 @@ def add_installed_apps(apps, directory):
         final_content = pre + '\n' + ast.unparse(current) + '\n' + post
         formatted_content = FormatCode(final_content, style_config='pep8')[0]
     
-    with open(f'{directory}/mysite/settings.py', 'w') as f:
+    with open(f'{directory}/rest_framework_template/settings.py', 'w') as f:
         f.write(formatted_content)
 
 if __name__ == "__main__":

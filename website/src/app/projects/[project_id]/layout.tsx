@@ -1,5 +1,7 @@
 import { auth } from "@/lib/auth";
 import Project from "@/models/Project";
+import Commiting from "./commiting";
+import updateProjectStatus  from "./commit_server_action";
 
 export default async function ProjectLayout({
     children,
@@ -25,6 +27,13 @@ export default async function ProjectLayout({
             <div className="text-lg">{"Project not found or you don't have access to this project."}</div>
             <div className="text-sm">Please check the url and try again.</div>
         </div>
+    }
+
+
+    if (project.status !== "commited") {
+        return (
+            <Commiting project_name={project.name} task_id={project.taskId} stat={project.status} server_action={updateProjectStatus} project_id={project._id} />
+        )
     }
 
 

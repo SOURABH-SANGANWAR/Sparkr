@@ -4,7 +4,6 @@ import Project  from "@/models/Project";
 import { auth } from "@/lib/auth";
 import GithubApiFetcher from "@/utils/github_fetcher";
 
-
 type ProjectData = {
     name: string,
     description: string,
@@ -71,6 +70,30 @@ export default async function createProject(data: ProjectData) {
             throw new Error("Unable to accept collabaration to the repository. Please try again later.");
         }
 
+        // Get service URL from environment
+        const service_url = process.env.NEXT_PUBLIC_SERVICE_URL;
+        if (!service_url){
+            throw new Error("SERVICE_URL is not given in environment to add as webhook!!")
+        }
+
+        const response = await fetch(`${service_url}/init-repo`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                repo_url: response_json['html_url'],
+            })
+        });
+
+        const service_response_data = await response.json();
+
+        if (!response || response.status !== 202) {
+            console.log("Unable to load template", response);
+            throw new Error("Unable to load template. Please try again later. Check console for full log.");
+        }
+        console.log("service_response_data", service_response_data);
+
         const project = new Project({
             name: data["name"],
             description: data["description"],
@@ -80,7 +103,9 @@ export default async function createProject(data: ProjectData) {
             githubRepositoryApiUrl: response.url,
             database: data["database"],
             authenticationType: data["authenticationType"],
-            owner: session.user._id
+            owner: session.user._id,
+            status: "creating",
+            taskId: service_response_data.task_id
         });
         
         await project.save();

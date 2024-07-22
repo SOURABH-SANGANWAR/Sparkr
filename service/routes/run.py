@@ -17,9 +17,7 @@ def url_to_attribute(url):
     return types, names
 
 
-def config_to_node(config, imports, attributes):
-    if config.get('serializer'):
-        imports[config['serializer']] = config['serializer_import_path']
+def config_to_node(config, attributes):
 
     arg_list = [ ast.Name(id='self', ctx=ast.Param()),
                 ast.Name(id='request', ctx=ast.Param())]+ [ast.arg(arg=attr, annotation=None) for attr in attributes]
@@ -42,9 +40,9 @@ def config_to_node(config, imports, attributes):
     body = genrate_route_body(config)
     configNode.body.append(body)
 
-    return configNode, imports
+    return configNode
 
-def build_class_node(route, imports):
+def build_class_node(route):
     classNode = ast.ClassDef(
         name=route['name'],
         bases=[ast.Name(id='APIView', ctx=ast.Load())],
@@ -74,33 +72,24 @@ def build_class_node(route, imports):
     _, attributes = url_to_attribute(route['path'])
 
     for config in route['route_configs']:
-        node, imports = config_to_node(config, imports, attributes)
+        node = config_to_node(config, attributes)
         classNode.body.append(node)
     
-    return classNode, imports
+    return classNode
         
 
 def setup_routes(routes, app_name, directory):
     with open(f'{directory}/{app_name}/views.py', 'r') as f:
         content = f.read()
 
-    imports = {
-        "Rsponse": "from rest_framework.response import Response",
-        "APIView": "from rest_framework.views import APIView",
-        "status": "from rest_framework import status",
-        "JWTAuthentication": "from rest_framework_simplejwt.authentication import JWTAuthentication",
-        "Q" : "from django.db.models import Q",
-        "IsAuthenticated": "from rest_framework.permissions import IsAuthenticated",
-        "AllowAny": "from rest_framework.permissions import AllowAny",
-        "verify_role_based_auth": "from utils.auth import verify_role_based_auth",
-        "verify_user_based_auth": "from utils.auth import verify_user_based_auth",
-    }
+    imports = {}
 
     for route in routes:
         pre, current, post = find_variable_definition(content, route['name'])
-        imports[route['model']] = route['model_import_path']
 
-        class_node, imports = build_class_node(route, imports)
+        imports.update(route['dependencies'])
+
+        class_node = build_class_node(route)
 
         content = pre + '\n' + ast.unparse(class_node) + '\n' + post
     
@@ -108,8 +97,3 @@ def setup_routes(routes, app_name, directory):
 
     with open(f'{directory}/{app_name}/views.py', 'w') as f:
         f.write(content)
-    
-    # Handle imports
-
-
-
