@@ -1,12 +1,26 @@
 import git
 from tempfile import mkdtemp
-from flask_app import flask_app
+# from flask_app import flask_app
 import shutil
+import os
+
+def remove_all_except_git(directory):
+    for item in os.listdir(directory):
+        item_path = os.path.join(directory, item)
+        if item == '.git':
+            continue
+        if os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+        else:
+            os.remove(item_path)
 
 
 def load_template( repo_url: str) -> str:
-    pat_token = flask_app.config['PAT_TOKEN']
-    import_url = flask_app.config['TEMPLATE_REPO_URL']
+    # pat_token = flask_app.config['PAT_TOKEN']
+    # import_url = flask_app.config['TEMPLATE_REPO_URL']
+    pat_token = "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"
+    import_url = "https://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@github.com/SOURABH-SANGANWAR/Sparkr.git"
+
     temp_dir = mkdtemp()
     if temp_dir:
         try:
@@ -21,21 +35,16 @@ def load_template( repo_url: str) -> str:
     new_temp_dir = mkdtemp()
     if new_temp_dir:
         try:
-            print(new_temp_dir)
             new_repo_url = repo_url.replace("https://", f"https://{pat_token}@")
             code_source = f"{temp_dir}/rest_framework_template"
             code_destination = new_temp_dir
+            new_repo = git.Repo.clone_from(new_repo_url, new_temp_dir)
+            remove_all_except_git(new_temp_dir)
             # copy the code from the template directory to the new temp directory
             shutil.copytree(code_source, code_destination, dirs_exist_ok=True)
-            # init the new repo
-            new_repo = git.Repo.init(new_temp_dir)
-            new_repo.git.checkout('-b', 'main')
             new_repo.git.add(all=True)
             new_repo.index.commit("Load template")
-            print("commited")
-            origin = new_repo.create_remote('origin', new_repo_url)
-            print("origin added")
-            origin.push("main")
+            new_repo.git.push()
             return ( True, None )
 
         except Exception as e:
@@ -47,4 +56,4 @@ def load_template( repo_url: str) -> str:
 
 
 if __name__ == "__main__":
-    load_template("https://github.com/Hello-2233/test.git")
+    load_template("https://github.com/SOURABH-SANGANWAR/new-project-3")
