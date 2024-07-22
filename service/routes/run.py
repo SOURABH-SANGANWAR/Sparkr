@@ -5,13 +5,13 @@ from utils.imports import check_imports
 from .handle_urls import update_urls
 
 def url_to_attribute(url):
-    # input url like '/users/<number:id>/hello/<slug:name>
+    # input url like 'users/<number:id>/hello/<slug:name>
     # return ['number', 'slug'], ['id', 'name']
     url = url.split('/')
     types = []
     names = []
     for i in range(len(url)):
-        if url[0] == '<':
+        if url[i][0] == '<':
             parts = url[i].split(':')
             types.append(parts[0][1:])
             names.append(parts[1][:-1])
