@@ -2,6 +2,7 @@ from utils.fetcher import find_variable_definition
 import ast
 from .utils import genrate_route_body
 from utils.imports import check_imports
+from .handle_urls import update_urls
 
 def url_to_attribute(url):
     # input url like '/users/<number:id>/hello/<slug:name>
@@ -79,6 +80,8 @@ def build_class_node(route):
         
 
 def setup_routes(routes, app_name, directory):
+
+    update_urls(routes, app_name, directory)
     with open(f'{directory}/{app_name}/views.py', 'r') as f:
         content = f.read()
 
@@ -86,7 +89,8 @@ def setup_routes(routes, app_name, directory):
 
     for route in routes:
         pre, current, post = find_variable_definition(content, route['name'])
-
+        if pre == '' and current == '':
+            raise Exception(f'Issue with {route["name"]} {app_name}/views.py. Please cross verify code. Error: {post}')
         imports.update(route['dependencies'])
 
         class_node = build_class_node(route)
