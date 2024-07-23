@@ -20,7 +20,7 @@ def get_cleaned_routes(serializers, tables, apps, routes):
             "verify_user_based_auth": "from utils.auth import verify_user_based_auth",
         }
         if app:
-            route['import_path'] = f'from {app["name"]}.views import {route["name"]}View'
+            route['import_path'] = f'from {app["name"]}.views import {route["name"]}'
             route['app_name'] = app['name']
         else:
             raise Exception(f"App with id {route['appId']} not found")
