@@ -63,7 +63,6 @@ def update_settings(project, directory):
     # Add JWTAuthentication to REST_FRAMEWORK Default Authentication Classes
     pre, current, post = find_variable_definition(content, 'REST_FRAMEWORK')
     if not current:
-        print("current not fount")
         content += '\nREST_FRAMEWORK = {\n    \'DEFAULT_AUTHENTICATION_CLASSES\': [\n        \'rest_framework_simplejwt.authentication.JWTAuthentication\',\n    ]\n}\n'
     else:
         found = False
@@ -73,7 +72,6 @@ def update_settings(project, directory):
                 current.value.values[index] = ast.List(elts=[ast.Constant(value='rest_framework_simplejwt.authentication.JWTAuthentication')], ctx=ast.Load())
                 break
         if not found:
-            print("not found")
             current.value.keys.append(ast.Constant(value='DEFAULT_AUTHENTICATION_CLASSES'))
             current.value.values.append(ast.List(elts=[ast.Constant(value='rest_framework_simplejwt.authentication.JWTAuthentication')], ctx=ast.Load()))
     

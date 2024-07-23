@@ -79,25 +79,35 @@ def build_class_node(route):
     return classNode
         
 
-def setup_routes(routes, app_name, directory):
+def setup_routes(routes, app_name, directory, state_variable, mutex, task, task_id):
 
-    update_urls(routes, app_name, directory)
-    with open(f'{directory}/{app_name}/views.py', 'r') as f:
-        content = f.read()
+    try:
 
-    imports = {}
+        update_urls(routes, app_name, directory)
+        with open(f'{directory}/{app_name}/views.py', 'r') as f:
+            content = f.read()
 
-    for route in routes:
-        pre, current, post = find_variable_definition(content, route['name'])
-        if pre == '' and current == '':
-            raise Exception(f'Issue with {route["name"]} {app_name}/views.py. Please cross verify code. Error: {post}')
-        imports.update(route['dependencies'])
+        imports = {}
 
-        class_node = build_class_node(route)
+        for route in routes:
+            pre, current, post = find_variable_definition(content, route['name'])
+            if pre == '' and current == '':
+                raise Exception(f'Issue with {route["name"]} {app_name}/views.py. Please cross verify code. Error: {post}')
+            imports.update(route['dependencies'])
 
-        content = pre + '\n' + ast.unparse(class_node) + '\n' + post
-    
-    content = check_imports(content, imports.keys(), imports.values())
+            class_node = build_class_node(route)
 
-    with open(f'{directory}/{app_name}/views.py', 'w') as f:
-        f.write(content)
+            content = pre + '\n' + ast.unparse(class_node) + '\n' + post
+        
+        content = check_imports(content, imports.keys(), imports.values())
+
+        with open(f'{directory}/{app_name}/views.py', 'w') as f:
+            f.write(content)
+        
+        with mutex:
+            state_variable['app_code_status'][app_name]['routes'] = True
+            task.update_state(task_id = task_id, state='PROGRESS', meta=state_variable)
+    except Exception as e:
+        state_variable['app_code_status'][app_name]['views'] = str(e)
+        state_variable['error_state'] = f'app_code_status,{app_name},routes'
+        task.update_state(task_id = task_id, state='PROGRESS', meta=state_variable)

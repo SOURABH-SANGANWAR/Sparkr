@@ -21,16 +21,13 @@ def clone_repo_and_commit(repo_url, pat_token, input_filename="input.txt", outpu
         bool: True if successful, False otherwise.
     """
     temp_dir = mkdtemp()
-    print(temp_dir)
     # Create a temporary directory
     # with mkdtemp() as temp_dir: 
     if temp_dir: 
         try:
             # Clone the repository using GitPython
-            print("cloning...")
             new_repo_url = repo_url.replace("https://", f"https://{pat_token}@")
             repo = git.Repo.clone_from(new_repo_url, temp_dir)
-            print("cloned")
             input_path = input_filename
             if os.path.exists(input_filename):
                 # Rename input file to output filename within the repo

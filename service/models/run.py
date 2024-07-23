@@ -58,28 +58,39 @@ def ast_field_node(field):
     )
     return [field_node]
 
-def create_models(models, app_name, directory):
+def create_models(models, app_name, directory, state_variable, mutex, task, task_id):
+    try:
+        with open(f'{directory}/{app_name}/models.py', 'r') as f:
+            content = f.read()
 
-    with open(f'{directory}/{app_name}/models.py', 'r') as f:
-        content = f.read()
+        # Check if models are imported from django.db
+        content = check_imports(content, ['models'], ['from django.db import models'])
 
-    # Check if models are imported from django.db
-    content = check_imports(content, ['models'], ['from django.db import models'])
-
-    for model in models:
+        for model in models:
+            
+            modelName = snake_to_camel_case(model['name'])
+            # Check if model already exists. Helps to replace that code.
+            pre, current, post = find_variable_definition(content, modelName)
+            if pre == '' and current == '':
+                raise Exception(f"Model {modelName} not found in models.py")
+            # create model
+            model_node = generate_model_code(model, modelName)
+            # update code
+            content = pre + '\n' + ast.unparse(model_node) + '\n' + post
         
-        modelName = snake_to_camel_case(model['name'])
-        # Check if model already exists. Helps to replace that code.
-        pre, current, post = find_variable_definition(content, modelName)
-        # create model
-        model_node = generate_model_code(model, modelName)
-        # update code
-        content = pre + '\n' + ast.unparse(model_node) + '\n' + post
-    
-    formatted_content = FormatCode(content, style_config='pep8')[0]
+        formatted_content = FormatCode(content, style_config='pep8')[0]
 
-    with open(f'{directory}/{app_name}/models.py', 'w') as f:
-        f.write(formatted_content)
+        with open(f'{directory}/{app_name}/models.py', 'w') as f:
+            f.write(formatted_content)
+        
+        with mutex:
+            state_variable['app_code_status'][app_name]['models'] = True
+            task.update_state(task_id = task_id, state='PROGRESS', meta=state_variable)
+    except Exception as e:
+        with mutex:
+            state_variable['app_code_status'][app_name]['models'] = str(e)
+            state_variable['error_state'] = f'app_code_status,{app_name},models'
+            task.update_state(task_id = task_id, state='PROGRESS', meta=state_variable)
 
     
 

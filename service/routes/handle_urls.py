@@ -39,7 +39,6 @@ def update_urls(routes, app_name, directory):
             if previous_defs[class_name] != path:
                 raise Exception(f"Path for {class_name} is already occupied with different pathname.")
     current.value.elts = body_of_urlpatterns
-    print("pre ka value", pre, "current ka value", ast.unparse(current), "post ka value", post)
     if pre and pre[-1] != '\n':
         pre += '\n'
     if pre == None:

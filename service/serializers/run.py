@@ -24,7 +24,6 @@ def field_to_node(field):
     return field_node, ast.Constant(value=field_name, ctx = ast.Load())
 
 def generate_serializer_node(serializer):
-    print(serializer)
     serializer_node = ast.ClassDef(
         name=serializer['name'],
         bases=[ast.Name(id='serializers.ModelSerializer', ctx=ast.Load())],
@@ -66,22 +65,34 @@ def generate_serializer_node(serializer):
     return serializer_node
 
 
-def add_serializer(serializers, app_name ,directory):
-    path = f'{directory}/{app_name}/serializers.py'
-    with open(path, 'r') as file:
-        content = file.read()
-    
-    imports = {}
+def add_serializer(serializers, app_name ,directory, state_variable, mutex, task, task_id):
+    try:
+        path = f'{directory}/{app_name}/serializers.py'
+        with open(path, 'r') as file:
+            content = file.read()
+        
+        imports = {}
 
-    for serializer in serializers:
-        imports.update(serializer['dependencies'])
-        serializer_node = generate_serializer_node(serializer)
-        pre, current, post = find_variable_definition(content, serializer['name'])
-        content = pre + '\n' + ast.unparse(serializer_node) + '\n' + post
-    
-    content = check_imports(content, list(imports.keys()), list(imports.values()))
+        for serializer in serializers:
+            imports.update(serializer['dependencies'])
+            serializer_node = generate_serializer_node(serializer)
+            pre, current, post = find_variable_definition(content, serializer['name'])
+            if pre == '' and current == '':
+                raise Exception(f"Serializer {serializer['name']} not found in serializers.py")
+            content = pre + '\n' + ast.unparse(serializer_node) + '\n' + post
+        
+        content = check_imports(content, list(imports.keys()), list(imports.values()))
 
-    # formatted_content = FormatCode(content, style_config='pep8')[0]
+        # formatted_content = FormatCode(content, style_config='pep8')[0]
 
-    with open(path, 'w') as file:
-        file.write(content)
+        with open(path, 'w') as file:
+            file.write(content)
+        
+        with mutex:
+            state_variable['app_code_status'][app_name]['serializers'] = True
+            task.update_state(task_id = task_id, state='PROGRESS', meta=state_variable)
+    except Exception as e:
+        with mutex:
+            state_variable['app_code_status'][app_name]['serializers'] = str(e)
+            state_variable['error_state'] = f'app_code_status,{app_name},serializers'
+            task.update_state(task_id = task_id, state='PROGRESS', meta=state_variable)
